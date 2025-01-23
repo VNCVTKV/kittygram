@@ -17,3 +17,31 @@ def cat_list(request):
     cats = Cat.objects.all()
     serializer = CatSerializer(cats, many=True)
     return Response(serializer.data)
+
+
+@api_view(['GET', 'DELETE', 'PATCH', 'PUT'])
+def cat_detail(request, pk):
+    try:
+        cat = Cat.objects.get(id=pk)
+    except Cat.DoesNotExist:
+        return Response({"error": "Resource not found"}, status=status.HTTP_404_NOT_FOUND)
+    
+    if request.method == 'DELETE':
+        cat.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    elif request.method == 'PATCH':
+        serializer = CatSerializer(cat, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'PUT':
+        serializer = CatSerializer(cat, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    elif request.method == 'GET':
+        serializer = CatSerializer(cat)
+        return Response(serializer.data)
+ 
